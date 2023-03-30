@@ -30,12 +30,14 @@ class EventFormatVersions:
     ROOM_V1_V2 = 1  # $id:server event id format: used for room v1 and v2
     ROOM_V3 = 2  # MSC1659-style $hash event id format: used for room v3
     ROOM_V4_PLUS = 3  # MSC1884-style $hash format: introduced for room v4
+    DELEGATED = 4  # Delegated Linear event
 
 
 KNOWN_EVENT_FORMAT_VERSIONS = {
     EventFormatVersions.ROOM_V1_V2,
     EventFormatVersions.ROOM_V3,
     EventFormatVersions.ROOM_V4_PLUS,
+    EventFormatVersions.DELEGATED,
 }
 
 
@@ -427,6 +429,27 @@ class RoomVersions:
         msc3931_push_features=(),
         msc3989_redaction_rules=True,
     )
+    LINEAR = RoomVersion(
+        "org.matrix.i-d.ralston-mimi-linearized-matrix.00",
+        RoomDisposition.UNSTABLE,
+        EventFormatVersions.DELEGATED,
+        StateResolutionVersions.V2,
+        enforce_key_validity=True,
+        special_case_aliases_auth=False,
+        strict_canonicaljson=True,
+        limit_notifications_power_levels=True,
+        msc2175_implicit_room_creator=True,
+        msc2176_redaction_rules=True,
+        msc3083_join_rules=True,
+        msc3375_redaction_rules=True,
+        msc2403_knocking=True,
+        msc2716_historical=False,
+        msc2716_redactions=False,
+        msc3787_knock_restricted_join_rule=True,
+        msc3667_int_only_power_levels=True,
+        msc3931_push_features=(),
+        msc3989_redaction_rules=True,
+    )
 
 
 KNOWN_ROOM_VERSIONS: Dict[str, RoomVersion] = {
@@ -446,6 +469,7 @@ KNOWN_ROOM_VERSIONS: Dict[str, RoomVersion] = {
         RoomVersions.V10,
         RoomVersions.MSC2716v4,
         RoomVersions.MSC3989,
+        RoomVersions.LINEAR,
     )
 }
 

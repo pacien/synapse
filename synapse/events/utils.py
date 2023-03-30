@@ -65,6 +65,10 @@ def prune_event(event: EventBase) -> EventBase:
     the user has specified, but we do want to keep necessary information like
     type, state_key etc.
     """
+
+    # TODO Check users of prune_event and prune_event_dict to ensure they shouldn't
+    # be doing something with the linear
+
     pruned_event_dict = prune_event_dict(event.room_version, event.get_dict())
 
     from . import make_event_from_dict

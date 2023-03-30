@@ -39,7 +39,7 @@ from unpaddedbase64 import encode_base64
 
 from synapse.api.constants import RelationTypes
 from synapse.api.room_versions import EventFormatVersions, RoomVersion, RoomVersions
-from synapse.types import JsonDict, RoomStreamToken, StrCollection
+from synapse.types import JsonDict, RoomStreamToken, StrCollection, get_domain_from_id
 from synapse.util.caches import intern_dict
 from synapse.util.frozenutils import freeze
 from synapse.util.stringutils import strtobool
@@ -343,6 +343,11 @@ class EventBase(metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
     @property
+    def pdu_domain(self) -> str:
+        """The domain which added this event to the DAG."""
+        return get_domain_from_id(self.sender)
+
+    @property
     def membership(self) -> str:
         return self.content["membership"]
 
@@ -585,6 +590,53 @@ class FrozenEventV3(FrozenEventV2):
             compute_event_reference_hash(self)[1], urlsafe=True
         )
         return self._event_id
+
+
+class FrozenLinearEvent(EventBase):
+    """
+    Represents a Delegated Linear PDU.
+    """
+
+    format_version = EventFormatVersions.DELEGATED
+
+    @property
+    def pdu_domain(self) -> str:
+        """The domain which added this event to the DAG.
+
+        It could be the authorized server or the sender."""
+        if self.delegated_server is not None:
+            return self.delegated_server
+        return super().pdu_domain
+
+    @property
+    def owner_server(self) -> Optional[str]:
+        return self.content.get("owner_server")
+
+    @property
+    def delegated_server(self) -> Optional[str]:
+        return self.content.get("delegated_server")
+
+    def get_linear_pdu_json(self, /, delegated: bool) -> JsonDict:
+        # if delegated and self.delegated_server is None:
+        #     # TODO Better error.
+        #     raise ValueError("Invalid")
+        # TODO Is this form correct? Are there other fields?
+        result = {
+            "room_id": self.room_id,
+            "type": self.type,
+            # Should state key be left out if it isn't a state event?
+            "state_key": self.state_key,
+            "sender": self.sender,
+            "origin_server_ts": self.origin_server_ts,
+            # If we want the delegated version use the owner_server
+            # if it exists.
+            "owner_server": self.delegated_server,
+            "content": self.content,
+            "hashes": self.hashes,
+        }
+        if delegated and self.delegated_server:
+            result["delegated_server"] = self.delegated_server
+        return result
 
 
 def _event_type_from_format_version(

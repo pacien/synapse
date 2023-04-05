@@ -459,11 +459,9 @@ class HomeServer(metaclass=abc.ABCMeta):
         """
         An HTTP client for federation.
         """
-        # XXX Disable TLS for federation.
-        # tls_client_options_factory = context_factory.FederationPolicyForHTTPS(
-        #     self.config
-        # )
-        tls_client_options_factory = None
+        tls_client_options_factory = context_factory.FederationPolicyForHTTPS(
+            self.config
+        )
         return MatrixFederationHttpClient(self, tls_client_options_factory)
 
     @cache_in_self

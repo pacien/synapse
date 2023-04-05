@@ -129,6 +129,8 @@ class EventTypes:
 
     Reaction: Final = "m.reaction"
 
+    Hub: Final = "m.room.hub"
+
 
 class ToDeviceEventTypes:
     RoomKeyRequest: Final = "m.room_key_request"

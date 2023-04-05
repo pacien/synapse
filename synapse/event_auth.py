@@ -131,15 +131,10 @@ def validate_event_for_room_version(event: "EventBase") -> None:
         # TODO Are these handling DAG-native events properly? Is the null-checks
         # a bypass?
 
-        # CHeck that the authorizing domain signed it.
-        owner_server = event.owner_server
-        if owner_server and not event.signatures.get(owner_server):
-            raise AuthError(403, "Event not signed by owner server")
-
-        # If this is a delegated PDU, check the original domain signed it.
-        delegated_server = event.delegated_server
-        if delegated_server and not event.signatures.get(delegated_server):
-            raise AuthError(403, "Event not signed by delegated server")
+        # Check that the hub server signed it.
+        hub_server = event.hub_server
+        if hub_server and not event.signatures.get(hub_server):
+            raise AuthError(403, "Event not signed by hub server")
 
     is_invite_via_allow_rule = (
         event.room_version.msc3083_join_rules
@@ -293,6 +288,14 @@ def check_state_dependent_auth_rules(
 
     auth_dict = {(e.type, e.state_key): e for e in auth_events}
 
+    # If the event was sent from a hub server it must be the current hub server.
+    if event.room_version.linear_matrix:
+        assert isinstance(event, FrozenLinearEvent)
+        if event.hub_server:
+            current_hub_server = get_hub_server(auth_dict)
+            if current_hub_server != event.hub_server:
+                raise AuthError(403, "Event sent from incorrect hub server.")
+
     # additional check for m.federate
     creating_domain = get_domain_from_id(event.room_id)
     originating_domain = get_domain_from_id(event.sender)
@@ -346,6 +349,12 @@ def check_state_dependent_auth_rules(
         else:
             logger.debug("Allowing! %s", event)
             return
+
+    # Hub events must be signed by the current hub.
+    if event.type == EventTypes.Hub:
+        current_hub_server = get_hub_server(auth_dict)
+        if not event.signatures.get(current_hub_server):
+            raise AuthError(403, "Unsigned hub event")
 
     _can_send_event(event, auth_dict)
 
@@ -1114,6 +1123,16 @@ def _verify_third_party_invite(
         except (KeyError, SignatureVerifyException):
             continue
     return False
+
+
+def get_hub_server(auth_events: StateMap["EventBase"]) -> str:
+    # The current hub is the sender of the current hub event...
+    hub_event = auth_events.get((EventTypes.Hub, ""), None)
+    if not hub_event:
+        # ...or the room creator if there is no hub event.
+        hub_event = auth_events[(EventTypes.Create, "")]
+
+    return get_domain_from_id(hub_event.sender)
 
 
 def get_public_keys(invite_event: "EventBase") -> List[Dict[str, Any]]:

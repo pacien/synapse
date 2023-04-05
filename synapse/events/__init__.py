@@ -321,8 +321,7 @@ class EventBase(metaclass=abc.ABCMeta):
 
         self.internal_metadata = _EventInternalMetadata(internal_metadata_dict)
 
-    # XXX
-    depth: DictProperty[int] = DefaultDictProperty("depth", 0)
+    depth: DictProperty[int] = DictProperty("depth")
     content: DictProperty[JsonDict] = DictProperty("content")
     hashes: DictProperty[Dict[str, str]] = DictProperty("hashes")
     origin: DictProperty[str] = DictProperty("origin")
@@ -593,7 +592,7 @@ class FrozenEventV3(FrozenEventV2):
         return self._event_id
 
 
-class FrozenLinearEvent(FrozenEventV2):
+class FrozenLinearEvent(EventBase):
     """
     Represents a Delegated Linear PDU.
     """
@@ -605,39 +604,20 @@ class FrozenLinearEvent(FrozenEventV2):
         """The domain which added this event to the DAG.
 
         It could be the authorized server or the sender."""
-        if self.delegated_server is not None:
-            return self.delegated_server
+        if self.hub_server is not None:
+            return self.hub_server
         return super().pdu_domain
 
     @property
-    def owner_server(self) -> Optional[str]:
-        return self.content.get("owner_server")
+    def hub_server(self) -> Optional[str]:
+        return self.content.get("hub_server")
 
-    @property
-    def delegated_server(self) -> Optional[str]:
-        return self.content.get("delegated_server")
-
-    def get_linear_pdu_json(self, /, delegated: bool) -> JsonDict:
-        # if delegated and self.delegated_server is None:
-        #     # TODO Better error.
-        #     raise ValueError("Invalid")
-        # TODO Is this form correct? Are there other fields?
-        result = {
-            "room_id": self.room_id,
-            "type": self.type,
-            # Should state key be left out if it isn't a state event?
-            "state_key": self.state_key,
-            "sender": self.sender,
-            "origin_server_ts": self.origin_server_ts,
-            # If we want the delegated version use the owner_server
-            # if it exists.
-            "owner_server": self.delegated_server,
-            "content": self.content,
-            "hashes": self.hashes,
-        }
-        if delegated and self.delegated_server:
-            result["delegated_server"] = self.delegated_server
-        return result
+    def get_linear_pdu_json(self) -> JsonDict:
+        # Get the full PDU and then remove fields from it.
+        pdu = self.get_pdu_json()
+        pdu.pop("auth_events")
+        pdu.pop("prev_events")
+        return pdu
 
 
 def _event_type_from_format_version(
@@ -659,8 +639,6 @@ def _event_type_from_format_version(
         return FrozenEventV2
     elif format_version == EventFormatVersions.ROOM_V4_PLUS:
         return FrozenEventV3
-    elif format_version == EventFormatVersions.LINEAR:
-        return FrozenLinearEvent
     else:
         raise Exception("No event format %r" % (format_version,))
 

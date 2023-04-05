@@ -387,6 +387,8 @@ class BaseFederationServlet:
                     "yet."
                 )
 
+            print(f"REGISTERINGGGGGGGGGGGGGGGGG: {method} for {pattern}")
+
             server.register_paths(
                 method,
                 (pattern,),

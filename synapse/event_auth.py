@@ -125,7 +125,7 @@ def validate_event_for_room_version(event: "EventBase") -> None:
         if not event.signatures.get(event_id_domain):
             raise AuthError(403, "Event not signed by sending server")
 
-    if event.format_version == EventFormatVersions.DELEGATED:
+    if event.format_version == EventFormatVersions.LINEAR:
         assert isinstance(event, FrozenLinearEvent)
 
         # TODO Are these handling DAG-native events properly? Is the null-checks

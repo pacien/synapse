@@ -30,14 +30,14 @@ class EventFormatVersions:
     ROOM_V1_V2 = 1  # $id:server event id format: used for room v1 and v2
     ROOM_V3 = 2  # MSC1659-style $hash event id format: used for room v3
     ROOM_V4_PLUS = 3  # MSC1884-style $hash format: introduced for room v4
-    DELEGATED = 4  # Delegated Linear event
+    LINEAR = 4  # Delegated Linear event
 
 
 KNOWN_EVENT_FORMAT_VERSIONS = {
     EventFormatVersions.ROOM_V1_V2,
     EventFormatVersions.ROOM_V3,
     EventFormatVersions.ROOM_V4_PLUS,
-    EventFormatVersions.DELEGATED,
+    EventFormatVersions.LINEAR,
 }
 
 
@@ -432,7 +432,7 @@ class RoomVersions:
     LINEAR = RoomVersion(
         "org.matrix.i-d.ralston-mimi-linearized-matrix.00",
         RoomDisposition.UNSTABLE,
-        EventFormatVersions.DELEGATED,
+        EventFormatVersions.LINEAR,
         StateResolutionVersions.V2,
         enforce_key_validity=True,
         special_case_aliases_auth=False,

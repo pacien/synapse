@@ -321,7 +321,8 @@ class EventBase(metaclass=abc.ABCMeta):
 
         self.internal_metadata = _EventInternalMetadata(internal_metadata_dict)
 
-    depth: DictProperty[int] = DictProperty("depth")
+    # XXX
+    depth: DictProperty[int] = DefaultDictProperty("depth", 0)
     content: DictProperty[JsonDict] = DictProperty("content")
     hashes: DictProperty[Dict[str, str]] = DictProperty("hashes")
     origin: DictProperty[str] = DictProperty("origin")
@@ -592,12 +593,12 @@ class FrozenEventV3(FrozenEventV2):
         return self._event_id
 
 
-class FrozenLinearEvent(EventBase):
+class FrozenLinearEvent(FrozenEventV2):
     """
     Represents a Delegated Linear PDU.
     """
 
-    format_version = EventFormatVersions.DELEGATED
+    format_version = EventFormatVersions.LINEAR
 
     @property
     def pdu_domain(self) -> str:
@@ -658,6 +659,8 @@ def _event_type_from_format_version(
         return FrozenEventV2
     elif format_version == EventFormatVersions.ROOM_V4_PLUS:
         return FrozenEventV3
+    elif format_version == EventFormatVersions.LINEAR:
+        return FrozenLinearEvent
     else:
         raise Exception("No event format %r" % (format_version,))
 

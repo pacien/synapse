@@ -253,7 +253,7 @@ async def _check_sigs_on_pdu(
 
     # If this is a linearized PDU we may need to check signatures of the owner
     # and sender.
-    if room_version.event_format == EventFormatVersions.DELEGATED:
+    if room_version.event_format == EventFormatVersions.LINEAR:
         assert isinstance(pdu, FrozenLinearEvent)
 
         # Check that the fields are not invalid.
@@ -320,13 +320,18 @@ def event_from_pdu_json(pdu_json: JsonDict, room_version: RoomVersion) -> EventB
     """
     # we could probably enforce a bunch of other fields here (room_id, sender,
     # origin, etc etc)
-    assert_params_in_dict(pdu_json, ("type", "depth"))
+    if room_version.event_format == EventFormatVersions.LINEAR:
+        assert_params_in_dict(pdu_json, ("type",))
+        # XXX This is wrong.
+        depth = 0
+    else:
+        assert_params_in_dict(pdu_json, ("type", "depth"))
+        depth = pdu_json["depth"]
 
     # Strip any unauthorized values from "unsigned" if they exist
     if "unsigned" in pdu_json:
         _strip_unsigned_values(pdu_json)
 
-    depth = pdu_json["depth"]
     if type(depth) is not int:
         raise SynapseError(400, "Depth %r not an intger" % (depth,), Codes.BAD_JSON)
 

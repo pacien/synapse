@@ -592,12 +592,12 @@ class FrozenEventV3(FrozenEventV2):
         return self._event_id
 
 
-class FrozenLinearEvent(EventBase):
+class FrozenLinearizedEvent(EventBase):
     """
     Represents a Delegated Linear PDU.
     """
 
-    format_version = EventFormatVersions.LINEAR
+    format_version = EventFormatVersions.LINEARIZED
 
     @property
     def pdu_domain(self) -> str:

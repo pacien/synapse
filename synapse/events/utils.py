@@ -114,7 +114,7 @@ def prune_event_dict(room_version: RoomVersion, event_dict: JsonDict) -> JsonDic
     if not room_version.msc2176_redaction_rules:
         allowed_keys.extend(["prev_state", "membership"])
     # The hub server should not be redacted for linear matrix.
-    if room_version.linear_matrix:
+    if room_version.linearized_matrix:
         allowed_keys.append("hub_server")
 
     # Room versions before MSC3989 kept the origin field.

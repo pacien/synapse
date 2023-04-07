@@ -615,6 +615,7 @@ class FrozenLinearizedEvent(EventBase):
     def get_linear_pdu_json(self) -> JsonDict:
         # Get the full PDU and then remove fields from it.
         pdu = self.get_pdu_json()
+        pdu.pop("hashes")
         pdu.pop("auth_events")
         pdu.pop("prev_events")
         return pdu

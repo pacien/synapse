@@ -104,7 +104,6 @@ def prune_event_dict(room_version: RoomVersion, event_dict: JsonDict) -> JsonDic
         "content",
         "type",
         "state_key",
-        "depth",
         "prev_events",
         "auth_events",
         "origin_server_ts",
@@ -116,6 +115,8 @@ def prune_event_dict(room_version: RoomVersion, event_dict: JsonDict) -> JsonDic
     # The hub server should not be redacted for linear matrix.
     if room_version.linearized_matrix:
         allowed_keys.append("hub_server")
+    else:
+        allowed_keys.append("depth")
 
     # Room versions before MSC3989 kept the origin field.
     if not room_version.msc3989_redaction_rules:

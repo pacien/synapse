@@ -55,7 +55,7 @@ from synapse.types import (
 
 if typing.TYPE_CHECKING:
     # conditional imports to avoid import cycle
-    from synapse.events import EventBase, FrozenLinearizedEvent
+    from synapse.events import EventBase
     from synapse.events.builder import EventBuilder
 
 logger = logging.getLogger(__name__)
@@ -126,8 +126,6 @@ def validate_event_for_room_version(event: "EventBase") -> None:
             raise AuthError(403, "Event not signed by sending server")
 
     if event.format_version == EventFormatVersions.LINEARIZED:
-        assert isinstance(event, FrozenLinearizedEvent)
-
         # TODO Are these handling DAG-native events properly? Is the null-checks
         # a bypass?
 
@@ -290,7 +288,6 @@ def check_state_dependent_auth_rules(
 
     # If the event was sent from a hub server it must be the current hub server.
     if event.room_version.linearized_matrix:
-        assert isinstance(event, FrozenLinearizedEvent)
         if event.hub_server:
             current_hub_server = get_hub_server(auth_dict)
             if current_hub_server != event.hub_server:

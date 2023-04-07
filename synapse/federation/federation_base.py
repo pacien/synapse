@@ -303,7 +303,9 @@ def event_from_pdu_json(pdu_json: JsonDict, room_version: RoomVersion) -> EventB
 
         depth = pdu_json["depth"]
         if type(depth) is not int:
-            raise SynapseError(400, "Depth %r not an integer" % (depth,), Codes.BAD_JSON)
+            raise SynapseError(
+                400, "Depth %r not an integer" % (depth,), Codes.BAD_JSON
+            )
 
         if depth < 0:
             raise SynapseError(400, "Depth too small", Codes.BAD_JSON)

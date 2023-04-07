@@ -337,6 +337,8 @@ class EventBase(metaclass=abc.ABCMeta):
     state_key: DictProperty[str] = DictProperty("state_key")
     type: DictProperty[str] = DictProperty("type")
     user_id: DictProperty[str] = DictProperty("sender")
+    # Should only matter for Linearized Matrix.
+    hub_server: DictProperty[Optional[str]] = DefaultDictProperty("hub_server", None)
 
     @property
     def event_id(self) -> str:
@@ -600,7 +602,7 @@ class FrozenLinearizedEvent(FrozenEventV3):
     format_version = EventFormatVersions.LINEARIZED
 
     # TODO(LM): Do we re-calculate depth at some point?
-    depth = 0
+    depth = 0  # type: ignore[assignment]
 
     @property
     def pdu_domain(self) -> str:
@@ -610,10 +612,6 @@ class FrozenLinearizedEvent(FrozenEventV3):
         if self.hub_server is not None:
             return self.hub_server
         return super().pdu_domain
-
-    @property
-    def hub_server(self) -> Optional[str]:
-        return self.content.get("hub_server")
 
     def get_linear_pdu_json(self) -> JsonDict:
         # Get the full PDU and then remove fields from it.

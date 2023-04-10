@@ -1185,4 +1185,9 @@ def auth_types_for_event(
                 )
                 auth_types.add(key)
 
+    # Events sent from a hub server must reference the hub state-event, if one
+    # exists.
+    if event.hub_server:
+        auth_types.add((EventTypes.Hub, ""))
+
     return auth_types

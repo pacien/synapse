@@ -97,7 +97,6 @@ class FederationBase:
                 await record_failure_callback(pdu, str(exc))
             raise exc
 
-        # TODO(LM) Does this get modified for linear PDUs?
         if not check_event_content_hash(pdu):
             # let's try to distinguish between failures because the event was
             # redacted (which are somewhat expected) vs actual ball-tampering

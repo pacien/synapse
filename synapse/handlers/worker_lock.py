@@ -126,7 +126,7 @@ class WorkerLocksHandler:
                 deferred.callback(None)
 
         for lock in locks:
-            self._clock.call_later(0, _wake_deferred, lock.deferred.callback)
+            self._clock.call_later(0, _wake_deferred, lock.deferred)
 
     @wrap_as_background_process("_cleanup_locks")
     async def _cleanup_locks(self) -> None:
